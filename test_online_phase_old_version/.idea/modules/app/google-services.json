@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "552732390219",
+    "firebase_url": "https://testonlinephase.firebaseio.com",
+    "project_id": "testonlinephase",
+    "storage_bucket": "testonlinephase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552732390219:android:58c4936c0ade1bd394eece",
+        "android_client_info": {
+          "package_name": "com.example.test_online_phase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "552732390219-t5rvt1chmkfai5h7tnj1ir8e0ebh78ln.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.test_online_phase",
+            "certificate_hash": "9b0d03b9ab6a67c8d1018843fe6f0bfab6c9db48"
+          }
+        },
+        {
+          "client_id": "552732390219-27oq5jve8opm5hak21umlfeevr67e0b8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR0VDeof5dJqiBZAGAVjQxPNyf9Ud4jD0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "552732390219-27oq5jve8opm5hak21umlfeevr67e0b8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.test_online_phase.MainActivity">
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    >
+
+    <EditText
+        android:id="@+id/numberOfSamplesId"
+        android:layout_width="200dp"
+        android:text="0"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:hint="number of Samples: " />
+
+    <EditText
+        android:id="@+id/realXcordinateId"
+        android:hint="real x: "
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:layout_marginTop="55dp"
+        />
+    <EditText
+        android:id="@+id/realYcordinateId"
+        android:hint="real y: "
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:layout_marginTop="100dp"
+        />
+
+    <RadioGroup
+        android:id="@+id/radioGroupId"
+        android:layout_width="100dp"
+        android:layout_height="180dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="14dp">
+
+        <RadioButton
+            android:id="@+id/k1Id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButton"
+            android:text="1" />
+
+        <RadioButton
+            android:id="@+id/k2Id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButton"
+            android:text="2" />
+
+        <RadioButton
+            android:id="@+id/k3Id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButton"
+            android:text="3" />
+
+        <RadioButton
+            android:id="@+id/k4Id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButton"
+            android:text="4" />
+
+        <RadioButton
+            android:id="@+id/k5Id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButton"
+            android:text="5" />
+    </RadioGroup>
+
+
+</RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginTop="210dp">
+
+        <TextView
+            android:id="@+id/estimateOfYId"
+            android:layout_width="166dp"
+            android:layout_height="37dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="80dp"
+            android:text="estimate y:" />
+
+        <TextView
+            android:id="@+id/estimateOfXId"
+            android:layout_width="161dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="30dp"
+            android:text="estimate x: " />
+
+        <TextView
+            android:id="@+id/errorTvId"
+            android:layout_width="200dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="140dp"
+            android:layout_marginLeft="30dp"
+            android:text="Error: "
+            />
+        <TextView
+            android:id="@+id/numberOfNeighbours"
+            android:layout_width="200dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="200dp"
+            android:layout_marginLeft="30dp"
+            android:text="Neihbours: "
+            />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="470dp"
+        >
+
+        <Button
+            android:id="@+id/startLocalizationBtnId"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_centerHorizontal="true"
+            android:text="start localization" />
+
+        <TextView
+            android:id="@+id/neigboursTvId"
+            android:layout_width="match_parent"
+            android:layout_height="102dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="5dp"
+            android:text="1 \n2 \n3 \n4 \n5" />
+
+
+    </RelativeLayout>
+</RelativeLayout>
