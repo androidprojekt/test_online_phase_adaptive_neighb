@@ -22,9 +22,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +47,13 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_PHONE_STATE;
 
 public class MainActivity extends AppCompatActivity {
+
+    Switch mySwitch;
+    TextView switchTv;
+    int switchKNN =0; //0 for adaptive 1 for classic KNN
+    String startTime;
+    String endTime;
+    TextView timeTv;
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -115,7 +124,28 @@ public class MainActivity extends AppCompatActivity {
         radiogroup = findViewById(R.id.radioGroupId);
         neighboursTv = findViewById(R.id.neigboursTvId);
         nrOfNeighbours = findViewById(R.id.numberOfNeighbours);
+        mySwitch=findViewById(R.id.switchId);
+        switchTv = findViewById(R.id.switchTvId);
+        timeTv = findViewById(R.id.timeTvId);
         //-----------------------------------------------------------------
+
+        mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b==true)
+                {
+                    switchKNN=1;
+                    Toast.makeText(getApplicationContext(), "classic", Toast.LENGTH_SHORT).show();
+                    switchTv.setText("Classic KNN");
+                }
+                else
+                {
+                    switchKNN=0;
+                    Toast.makeText(getApplicationContext(), "adaptive", Toast.LENGTH_SHORT).show();
+                    switchTv.setText("Adaptive KNN");
+                }
+            }
+        });
 
         //--------------------------------initializing BLE and WIFI---------------------------------
         mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -194,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
                 startScanBeaconFlag=true;
                 startScanWifiFlag=true;
                 calendar = Calendar.getInstance();
+                startTime =simpleDateFormat.format(calendar.getTime());
                 Log.d("TIME", "start time: " + simpleDateFormat.format(calendar.getTime()));
             }
         });
@@ -328,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
                     if (finishedBeaconsIterator==numberOfBeacons) {
                         calendar = Calendar.getInstance();
                         Log.d("TIME", "End time: " + simpleDateFormat.format(calendar.getTime()));
-
+                        endTime =simpleDateFormat.format(calendar.getTime());
                         startScanBeaconFlag=false;
                         if (finishedWifiIterator == numberOfWifi) {
                             //-----------------------------------LOG's------------------------------
@@ -441,35 +472,29 @@ public class MainActivity extends AppCompatActivity {
         double estimateX = 0.0;
         double estimateY = 0.0;
 
-        String neigbour1 = "n1 x: " + referencePointList.get(0).getX() + " y: " + referencePointList.get(0).getY()+" dist: "+
-        referencePointList.get(0).getEuclideanDistance() + "\n";
-        String neigbour2 = "n2 x: " + referencePointList.get(1).getX() + " y: " + referencePointList.get(1).getY()+" dist: "+
-                referencePointList.get(1).getEuclideanDistance()+ "\n";
-        String neigbour3= "n3 x: " + referencePointList.get(2).getX() + " y: " + referencePointList.get(2).getY()+" dist: "+
-                referencePointList.get(2).getEuclideanDistance()+ "\n";
-        String neigbour4= "n4 x: " + referencePointList.get(3).getX() + " y: " + referencePointList.get(3).getY()+" dist: "+
-                referencePointList.get(3).getEuclideanDistance()+ "\n";
-        String neigbour5= "n5 x: " + referencePointList.get(4).getX() + " y: " + referencePointList.get(4).getY()+" dist: "+
-                referencePointList.get(4).getEuclideanDistance()+ "\n";
 
-        neighboursTv.setText(neigbour1 + neigbour2 + neigbour3 + neigbour4 + neigbour5 );
 
-        //------------------------------------adaptive method of KNN--------------------------------
-        int numberOfNeighbours = 0;
-        for (Point pt : referencePointList) {
-            if (pt.getEuclideanDistance() <= maxEuclideanDistance) {
-                x += pt.getX() * (1 / pt.getEuclideanDistance());
-                y += pt.getY() * (1 / pt.getEuclideanDistance());
-                sumOfWeights += 1 / pt.getEuclideanDistance();
-                numberOfNeighbours++;
+        if(switchKNN==0)
+        {
+            //------------------------------------adaptive method of KNN--------------------------------
+            int numberOfNeighbours = 0;
+            for (Point pt : referencePointList) {
+                if (pt.getEuclideanDistance() <= maxEuclideanDistance) {
+                    x += pt.getX() * (1 / pt.getEuclideanDistance());
+                    y += pt.getY() * (1 / pt.getEuclideanDistance());
+                    sumOfWeights += 1 / pt.getEuclideanDistance();
+                    numberOfNeighbours++;
+                }
             }
-        }
-        nrOfNeighbours.setText("Neighbours: " + String.valueOf(numberOfNeighbours));
-        Log.d("Nearest Neigbours", "CHECK NEIGHBOURS: " + numberOfNeighbours);
+            nrOfNeighbours.setText("Neighbours: " + String.valueOf(numberOfNeighbours));
+            Log.d("Nearest Neigbours", "CHECK NEIGHBOURS: " + numberOfNeighbours);
 
-        //------------------------------------------------------------------------------------------
-     //-------------------------------old version - standard KNN------------------------------------
-        /*
+            //------------------------------------------------------------------------------------------
+        }
+        else
+        {
+            //-------------------------------old version - standard KNN------------------------------------
+
         for (int i = 0; i < kNeighbours; i++) {
 
             Log.d("Nearest Neigbours", "x: " +referencePointList.get(i).getX()+"  y: "+ referencePointList.get(i).getY()
@@ -478,8 +503,26 @@ public class MainActivity extends AppCompatActivity {
             y += referencePointList.get(i).getY() * (1 / referencePointList.get(i).getEuclideanDistance());
             sumOfWeights += 1 / referencePointList.get(i).getEuclideanDistance();
         }
+
+            String neigbour1 = "n1 x: " + referencePointList.get(0).getX() + " y: " + referencePointList.get(0).getY()+" dist: "+
+                    referencePointList.get(0).getEuclideanDistance() + "\n";
+            String neigbour2 = "n2 x: " + referencePointList.get(1).getX() + " y: " + referencePointList.get(1).getY()+" dist: "+
+                    referencePointList.get(1).getEuclideanDistance()+ "\n";
+            String neigbour3= "n3 x: " + referencePointList.get(2).getX() + " y: " + referencePointList.get(2).getY()+" dist: "+
+                    referencePointList.get(2).getEuclideanDistance()+ "\n";
+            String neigbour4= "n4 x: " + referencePointList.get(3).getX() + " y: " + referencePointList.get(3).getY()+" dist: "+
+                    referencePointList.get(3).getEuclideanDistance()+ "\n";
+            String neigbour5= "n5 x: " + referencePointList.get(4).getX() + " y: " + referencePointList.get(4).getY()+" dist: "+
+                    referencePointList.get(4).getEuclideanDistance()+ "\n";
+
+            neighboursTv.setText(neigbour1 + neigbour2 + neigbour3 + neigbour4 + neigbour5 );
      //---------------------------------------------------------------------------------------------
-         */
+
+            timeTv.setText("Start: "+ startTime + " end: "+endTime);
+        }
+
+
+
         estimateX = x / sumOfWeights;
         estimateY = y / sumOfWeights;
 
