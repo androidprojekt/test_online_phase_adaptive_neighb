@@ -518,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
             neighboursTv.setText(neigbour1 + neigbour2 + neigbour3 + neigbour4 + neigbour5 );
      //---------------------------------------------------------------------------------------------
 
-            timeTv.setText("Start: "+ startTime + " end: "+endTime);
+
         }
 
 
@@ -536,6 +536,7 @@ public class MainActivity extends AppCompatActivity {
        // Log.d("Estimate of positions", "Estimate position x: " +estimateX+"  y: "+ estimateY);
         //clear data
         prepareToNewScan();
+        timeTv.setText("Start: "+ startTime + " end: "+endTime);
     }
     public void checkRadioButton(View view) {
         int radioId = radiogroup.getCheckedRadioButtonId();
