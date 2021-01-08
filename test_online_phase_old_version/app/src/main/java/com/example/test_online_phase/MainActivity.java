@@ -82,11 +82,11 @@ public class MainActivity extends AppCompatActivity {
 
     //-----------------------------configuration variables------------------------------------------
     int numberOfSamples = 5; // number of needed samples to receive in online phase
-    int numberOfBeacons = 2; // beacons in system
+    int numberOfBeacons = 3; // beacons in system
     int numberOfWifi = 1;    // number of AP's
     int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
     int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
-    int xPoints = 5; // number of X coordinates
+    int xPoints = 4; // number of X coordinates
     int yPoints = 4; // number of Y coordinates
     int kNeighbours = 3; // number of nearest neighbour
     double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
@@ -359,7 +359,6 @@ public class MainActivity extends AppCompatActivity {
                     if (finishedBeaconsIterator==numberOfBeacons) {
                         calendar = Calendar.getInstance();
                         Log.d("TIME", "End time: " + simpleDateFormat.format(calendar.getTime()));
-                        endTime =simpleDateFormat.format(calendar.getTime());
                         startScanBeaconFlag=false;
                         if (finishedWifiIterator == numberOfWifi) {
                             //-----------------------------------LOG's------------------------------
@@ -369,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
                             //Log.d("CHECK", "values: " + beaconList.get(1).getSamplesTab());
                             //Log.d("CHECK", "values: " + beaconList.get(2).getSamplesTab()); //warning! sometimes may be out of list
                             //----------------------------------------------------------------------
-
+                            endTime =simpleDateFormat.format(calendar.getTime());
                             startScanWifiFlag = false;
                             beaconList.sort(new beaconSorter()); // list of sorted euclidean distances with x,y cordinates
 
