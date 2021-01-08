@@ -525,7 +525,8 @@ public class MainActivity extends AppCompatActivity {
 
         estimateX = x / sumOfWeights;
         estimateY = y / sumOfWeights;
-
+        estimateX = Math.round(estimateX * 100.0) / 100.0; //rounded to 2 decimal places
+        estimateY = Math.round(estimateY * 100.0) / 100.0; //rounded to 2 decimal places
         estimateXTv.setText("x = "+estimateX);
         estimateYTv.setText("y = "+estimateY);
         double realXvalue = Double.parseDouble(String.valueOf(realX.getText()));
