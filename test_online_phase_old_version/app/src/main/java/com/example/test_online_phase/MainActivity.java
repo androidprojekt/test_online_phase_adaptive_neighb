@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     String startTime;
     String endTime;
     TextView timeTv;
+    EditText percentOfKNN;
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -127,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         mySwitch=findViewById(R.id.switchId);
         switchTv = findViewById(R.id.switchTvId);
         timeTv = findViewById(R.id.timeTvId);
+        percentOfKNN = findViewById(R.id.percentOfKNNId);
         //-----------------------------------------------------------------
 
         mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -209,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                int nrOfSamplesTemp = Integer.valueOf(String.valueOf(numberOfSamplesEditText.getText()));
+                int nrOfSamplesTemp = Integer.parseInt(String.valueOf(numberOfSamplesEditText.getText()));
                 if(nrOfSamplesTemp!=0)
                 {
                     numberOfSamples = nrOfSamplesTemp;
@@ -220,6 +222,18 @@ public class MainActivity extends AppCompatActivity {
                     numberOfSamples=5;
                     Toast.makeText(getApplicationContext(), "number of samples: "+ numberOfSamples, Toast.LENGTH_SHORT).show();
                 }
+
+                double tempPercentOfKnn;
+                tempPercentOfKnn = Double.parseDouble(String.valueOf(percentOfKNN.getText()));
+                if (tempPercentOfKnn!=0)
+                {
+                    tempPercentOfKnn = tempPercentOfKnn/100.0;
+                    percentRangeOfEuclideanDist=tempPercentOfKnn;
+                }
+                else percentRangeOfEuclideanDist=0.2;
+
+                Toast.makeText(getApplicationContext(), "percentRange: "+ percentRangeOfEuclideanDist, Toast.LENGTH_SHORT).show();
+
                 startScanFlag = true;
                 startScanBeaconFlag=true;
                 startScanWifiFlag=true;
