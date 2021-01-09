@@ -491,14 +491,19 @@ public class MainActivity extends AppCompatActivity {
         {
             //------------------------------------adaptive method of KNN--------------------------------
             int numberOfNeighbours = 0;
+            String adaptiveNeighbours ="";
             for (Point pt : referencePointList) {
                 if (pt.getEuclideanDistance() <= maxEuclideanDistance) {
                     x += pt.getX() * (1 / pt.getEuclideanDistance());
                     y += pt.getY() * (1 / pt.getEuclideanDistance());
                     sumOfWeights += 1 / pt.getEuclideanDistance();
                     numberOfNeighbours++;
+                    adaptiveNeighbours += "n"+numberOfNeighbours+" x: " + pt.getX() +
+                            " y: " + pt.getY()+" dist: "+ pt.getEuclideanDistance() + "\n";
                 }
+
             }
+            neighboursTv.setText(adaptiveNeighbours);
             nrOfNeighbours.setText("Neighbours: " + String.valueOf(numberOfNeighbours));
             Log.d("Nearest Neigbours", "CHECK NEIGHBOURS: " + numberOfNeighbours);
 
