@@ -37,10 +37,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.Format;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -55,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     String endTime;
     TextView timeTv;
     EditText percentOfKNN;
+    Date startT;
+    Date endT;
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -87,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
     int numberOfWifi = 1;    // number of AP's
     int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
     int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
-    int xPoints = 4; // number of X coordinates
-    int yPoints = 4; // number of Y coordinates
+    int xPoints = 8; // number of X coordinates
+    int yPoints = 5; // number of Y coordinates
     int kNeighbours = 3; // number of nearest neighbour
     double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
     //----------------------------------------------------------------------------------------------
@@ -111,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         calendar = Calendar.getInstance();
-        simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
+        simpleDateFormat = new SimpleDateFormat("hh:mm:ss:SSS");
 
         //--------------------------VIEWS---------------------------------
         context = getApplicationContext();
@@ -239,6 +244,12 @@ public class MainActivity extends AppCompatActivity {
                 startScanWifiFlag=true;
                 calendar = Calendar.getInstance();
                 startTime =simpleDateFormat.format(calendar.getTime());
+                try {
+                    startT = simpleDateFormat.parse(startTime);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
                 Log.d("TIME", "start time: " + simpleDateFormat.format(calendar.getTime()));
             }
         });
@@ -260,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
         //reading the main database file
         String json = null;
         try {
-            InputStream is = getAssets().open("zuzia_pokoj.json");
+            InputStream is = getAssets().open("polanka_final.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -314,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            mHandler.postDelayed(wifiScanner, 500); //nie wiadomo co z czasem, jaka wartosc przyjac?
+            mHandler.postDelayed(wifiScanner, 200); //nie wiadomo co z czasem, jaka wartosc przyjac?
         }
     };
 
@@ -371,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if (finishedBeaconsIterator==numberOfBeacons) {
-                        calendar = Calendar.getInstance();
+
                         Log.d("TIME", "End time: " + simpleDateFormat.format(calendar.getTime()));
                         startScanBeaconFlag=false;
                         if (finishedWifiIterator == numberOfWifi) {
@@ -382,7 +393,13 @@ public class MainActivity extends AppCompatActivity {
                             //Log.d("CHECK", "values: " + beaconList.get(1).getSamplesTab());
                             //Log.d("CHECK", "values: " + beaconList.get(2).getSamplesTab()); //warning! sometimes may be out of list
                             //----------------------------------------------------------------------
+                            calendar = Calendar.getInstance();
                             endTime =simpleDateFormat.format(calendar.getTime());
+                            try {
+                                endT = simpleDateFormat.parse(endTime);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                             startScanWifiFlag = false;
                             beaconList.sort(new beaconSorter()); // list of sorted euclidean distances with x,y cordinates
 
@@ -554,7 +571,8 @@ public class MainActivity extends AppCompatActivity {
        // Log.d("Estimate of positions", "Estimate position x: " +estimateX+"  y: "+ estimateY);
         //clear data
         prepareToNewScan();
-        timeTv.setText("Start: "+ startTime + " end: "+endTime);
+        long diffs = endT.getTime() - startT.getTime();
+        timeTv.setText("Start: "+ startTime + " end: "+endTime +"diff: "+ diffs );
     }
     public void checkRadioButton(View view) {
         int radioId = radiogroup.getCheckedRadioButtonId();
