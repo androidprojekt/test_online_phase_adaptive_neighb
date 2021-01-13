@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
 
         for(Transmitter beacon : beaconList)
         {
-            Log.d("Cordinate", "beacons: " + beacon.getMacAdress()+", ");
+            Log.d("edit", "beacons: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
         }
 
         //----------------------choice of 3 beacons that transmit the most power--------------------
@@ -494,8 +494,8 @@ public class MainActivity extends AppCompatActivity {
                     String databaseBeaconRssiTemp = tempPoint.getString(beacon.getMacAdress()); // from database
                     double databaseBeaconRssi = Double.parseDouble(databaseBeaconRssiTemp); //from database
                     double actualBeaconRssi = beacon.getAverage(); //actual
-                    Log.d("coordinate test","actual point from beacon: "+beacon.getMacAdress()+": "+str+ " " + actualBeaconRssi);
-                    Log.d("coordinate test", "database point from beacon: " +beacon.getMacAdress()+": "+ str+" " + databaseBeaconRssi);
+                    Log.d("edit","actual point from beacon: "+beacon.getMacAdress()+": "+str+ " " + actualBeaconRssi);
+                    Log.d("edit", "database point from beacon: " +beacon.getMacAdress()+": "+ str+" " + databaseBeaconRssi);
                     tempCalculation = Math.pow((databaseBeaconRssi - actualBeaconRssi), 2);
                     tempTab.add(tempCalculation);
                 }
