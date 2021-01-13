@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
     int numberOfWifi = 1;    // number of AP's
     int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
     int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
-    int xPoints = 8; // number of X coordinates
-    int yPoints = 5; // number of Y coordinates
+    int xPoints = 4; // number of X coordinates
+    int yPoints = 4; // number of Y coordinates
     int kNeighbours = 3; // number of nearest neighbour
     double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
     //----------------------------------------------------------------------------------------------
