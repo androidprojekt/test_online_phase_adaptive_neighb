@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     EditText percentOfKNN;
     Date startT;
     Date endT;
+    int nrOfStrongestBeacons =2;
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -271,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         //reading the main database file
         String json = null;
         try {
-            InputStream is = getAssets().open("polanka_final.json");
+            InputStream is = getAssets().open("zuzia_pokoj.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -401,13 +402,16 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             startScanWifiFlag = false;
-                            beaconList.sort(new beaconSorter()); // list of sorted euclidean distances with x,y cordinates
+                            /*
+                            beaconList.sort(new beaconSorter()); // sorting the beacons that collected samples the fastest
 
                             for (int i = beaconList.size(); i > numberOfBeacons; i--)
                             //removing beacons from the list above the set value
                             {
                                 beaconList.remove(i - 1);
                             }
+
+                             */
 
                             //---------------------------------LOG's--------------------------------
                             Log.d("SORT CHECK", "values of Wifi: " + wifiList.get(0).getSamplesTab());
@@ -453,6 +457,23 @@ public class MainActivity extends AppCompatActivity {
     public void estimatePositions() throws JSONException {
         ArrayList<Double> tempTab = new ArrayList<>(); // (x_a - x_b)^2
         double tempCalculation = 0.0;
+
+        for(Transmitter beacon : beaconList)
+        {
+            Log.d("Cordinate", "beacons: " + beacon.getMacAdress()+", ");
+        }
+
+        //----------------------choice of 3 beacons that transmit the most power--------------------
+        //needed for it to work properly: set number of beacons = all (line 91)
+        //commenting the line from 404 to 410
+        beaconList.sort(new strongestBeaconSorter()); // sorting the beacons that collected samples the fastest
+        for (int i = beaconList.size(); i > nrOfStrongestBeacons; i--)
+        //removing beacons from the list above the set value
+        {
+            beaconList.remove(i - 1);
+        }
+
+
 
         for (int x = 0; x < xPoints; x++) {
             for (int y = 0; y < yPoints; y++) {
@@ -600,6 +621,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public static class strongestBeaconSorter implements Comparator<Transmitter> {
+        @Override
+        public int compare(Transmitter t1, Transmitter t2) {
+            return Double.valueOf(t1.getAverage()).compareTo(t2.getAverage());
+//Double.valueOf(t1.getAverage().compareTo(t2.getAverage()));
+        }
+    }
+
 
     public void prepareToNewScan()
     {
@@ -615,5 +644,7 @@ public class MainActivity extends AppCompatActivity {
         //beaconList.clear();
         referencePointList.clear();
     }
+
+
 
 }
