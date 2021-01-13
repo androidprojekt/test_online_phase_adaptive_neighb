@@ -625,12 +625,25 @@ public class MainActivity extends AppCompatActivity {
             //return Integer.valueOf(t1.getSamplesIterator()).compareTo(t2.getSamplesIterator());
         }
     }
-
+/*
     public static class strongestBeaconSorter implements Comparator<Transmitter> {
         @Override
         public int compare(Transmitter t1, Transmitter t2) {
             return Double.valueOf(t1.getAverage()).compareTo(t2.getAverage());
 //Double.valueOf(t1.getAverage().compareTo(t2.getAverage()));
+        }
+    }
+
+ */
+
+    public static class strongestBeaconSorter implements Comparator<Transmitter> {
+        @Override
+        public int compare(Transmitter t1, Transmitter t2) {
+            if(t1.getAverage()<t2.getAverage()) {
+                return 1;
+            }
+            else return -1;
+            //return Integer.valueOf(t1.getSamplesIterator()).compareTo(t2.getSamplesIterator());
         }
     }
 
