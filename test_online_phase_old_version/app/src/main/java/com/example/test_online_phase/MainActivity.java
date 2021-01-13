@@ -460,13 +460,18 @@ public class MainActivity extends AppCompatActivity {
 
         for(Transmitter beacon : beaconList)
         {
-            Log.d("edit", "beacons: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
+            Log.d("edit", "beacons before sort: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
         }
+
 
         //----------------------choice of 3 beacons that transmit the most power--------------------
         //needed for it to work properly: set number of beacons = all (line 91)
         //commenting the line from 404 to 410
         beaconList.sort(new strongestBeaconSorter()); // sorting the beacons that collected samples the fastest
+        for(Transmitter beacon : beaconList)
+        {
+            Log.d("edit", "beacons after sort: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
+        }
         for (int i = beaconList.size(); i > nrOfStrongestBeacons; i--)
         //removing beacons from the list above the set value
         {
