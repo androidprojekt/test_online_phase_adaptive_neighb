@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     EditText percentOfKNN;
     Date startT;
     Date endT;
-    int nrOfStrongestBeacons =2;
+    int nrOfStrongestBeacons = 3;
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -88,13 +88,13 @@ public class MainActivity extends AppCompatActivity {
     //----------------------------------------------------------------------------------------------
 
     //-----------------------------configuration variables------------------------------------------
-    int numberOfSamples = 5; // number of needed samples to receive in online phase
-    int numberOfBeacons = 3; // beacons in system
+    int numberOfSamples = 15; // number of needed samples to receive in online phase
+    int numberOfBeacons = 8; // beacons in system
     int numberOfWifi = 1;    // number of AP's
     int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
     int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
-    int xPoints = 4; // number of X coordinates
-    int yPoints = 4; // number of Y coordinates
+    int xPoints = 8; // number of X coordinates
+    int yPoints = 5; // number of Y coordinates
     int kNeighbours = 3; // number of nearest neighbour
     double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
     //----------------------------------------------------------------------------------------------
@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    numberOfSamples=5;
+                    numberOfSamples=15;
                     Toast.makeText(getApplicationContext(), "number of samples: "+ numberOfSamples, Toast.LENGTH_SHORT).show();
                 }
 
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         //reading the main database file
         String json = null;
         try {
-            InputStream is = getAssets().open("zuzia_pokoj.json");
+            InputStream is = getAssets().open("polanka_21_01_uzupelnione.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //-----------------------------------------Threads-----------------------------new version------
+
     private Runnable BLEstopScan = new Runnable() {
 
         @RequiresApi(api = Build.VERSION_CODES.N)
@@ -304,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(BLEstopScan, 6000);
         }
     };
+
     //----------------------------------------------------------------------------------------------
 
     private Runnable wifiScanner = new Runnable() {
@@ -344,7 +346,6 @@ public class MainActivity extends AppCompatActivity {
         public void onScanResult(int callbackType, final ScanResult result) {
             super.onScanResult(callbackType, result);
             final BluetoothDevice device = result.getDevice();
-            Log.d("onScanResult start TIME", "scanCallback, device: "+ device);
             final int rssi = result.getRssi();
             runOnUiThread(new Runnable() {
                 @Override
@@ -375,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                             }
-                        } if (newBeacon == true) {
+                        } if (newBeacon) {
                             Transmitter transmitter = new Transmitter(device.getAddress(), rssi, "Beacon");
                             beaconList.add(transmitter);
                             transmitter.addToTheSamplesTab(rssi);
@@ -402,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                             startScanWifiFlag = false;
-                            /*
+
                             beaconList.sort(new beaconSorter()); // sorting the beacons that collected samples the fastest
 
                             for (int i = beaconList.size(); i > numberOfBeacons; i--)
@@ -411,7 +412,7 @@ public class MainActivity extends AppCompatActivity {
                                 beaconList.remove(i - 1);
                             }
 
-                             */
+
 
                             //---------------------------------LOG's--------------------------------
                             Log.d("SORT CHECK", "values of Wifi: " + wifiList.get(0).getSamplesTab());
@@ -478,7 +479,10 @@ public class MainActivity extends AppCompatActivity {
             beaconList.remove(i - 1);
         }
 
-
+        for(Transmitter beacon : beaconList)
+        {
+            Log.d("korbacz", "beacons after remove: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
+        }
 
         for (int x = 0; x < xPoints; x++) {
             for (int y = 0; y < yPoints; y++) {
