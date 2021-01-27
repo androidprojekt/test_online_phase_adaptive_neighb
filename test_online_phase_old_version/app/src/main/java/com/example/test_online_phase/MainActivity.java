@@ -30,14 +30,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.database.FirebaseDatabase;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -99,6 +96,16 @@ public class MainActivity extends AppCompatActivity {
     double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
     //----------------------------------------------------------------------------------------------
 
+    //-------------------------variables needed to constrained search-space-------------------------
+    double estimateX; //previous value of estimate x coordination
+    double estimateY; //previous value of estimate y coordination
+    int minX;         //left range of x coordinate
+    int minY;         //down range of y coordinate
+    int maxX;         //right range of x coordinate
+    int maxY;         //up range of y coordinate
+    private Boolean firstRun; //flag needed to first run (full search area)
+
+
     //--------------------------------------JSON objects--------------------------------------------
     JSONObject objectDatabase; // main file database (with all directions)
     JSONObject objectUpDatabase; // all measurments from UP directions
@@ -144,21 +151,25 @@ public class MainActivity extends AppCompatActivity {
                 {
                     switchKNN=1;
                     Toast.makeText(getApplicationContext(), "classic", Toast.LENGTH_SHORT).show();
-                    switchTv.setText("Classic KNN");
+                    switchTv.setText("Classic WKNN");
                 }
                 else
                 {
                     switchKNN=0;
                     Toast.makeText(getApplicationContext(), "adaptive", Toast.LENGTH_SHORT).show();
-                    switchTv.setText("Adaptive KNN");
+                    switchTv.setText("Adaptive WKNN");
                 }
             }
         });
 
         //--------------------------------initializing BLE and WIFI---------------------------------
+
         mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         mBlueToothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothLeScanner = mBlueToothAdapter.getBluetoothLeScanner(); // new solution for scanning
+
+
+        mBluetoothLeScanner = mBlueToothAdapter.getBluetoothLeScanner();
+
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         beaconList = new ArrayList<>();
         wifiList = new ArrayList<>();
@@ -182,19 +193,17 @@ public class MainActivity extends AppCompatActivity {
         //--------------------------------------------------------------------
 
         //--------------------Settings and filters for scanning bluetooth devices-------------------
-        String[] peripheralAddresses = new String[]{"E8:D4:18:0D:DB:37", "D6:2E:C2:40:FD:03", "EF:F7:2A:DC:14:03",
-                "DD:BC:33:F9:EE:56","F7:8B:72:B7:42:C4", "C1:90:8E:4B:16:E5","C6:40:D6:9C:59:7E","DB:A8:FF:3E:95:79",
-        "FC:02:5B:0D:05:60"};
-        //Beacon F7:8B:72:B7:42:C4 probably is defect
+
+        String[] peripheralAddresses = new String[]{"E8:D4:18:0D:DB:37", "D6:2E:C2:40:FD:03",
+                "EF:F7:2A:DC:14:03", "DD:BC:33:F9:EE:56","F7:8B:72:B7:42:C4", "C1:90:8E:4B:16:E5",
+                "C6:40:D6:9C:59:7E","DB:A8:FF:3E:95:79", "FC:02:5B:0D:05:60"};
         filters = null;
-        if (peripheralAddresses != null) {
-            filters = new ArrayList<>();
-            for (String address : peripheralAddresses) {
-                ScanFilter filter = new ScanFilter.Builder()
-                        .setDeviceAddress(address)
-                        .build();
-                filters.add(filter);
-            }
+        filters = new ArrayList<>();
+        for (String address : peripheralAddresses) {
+            ScanFilter filter = new ScanFilter.Builder()
+                    .setDeviceAddress(address)
+                    .build();
+            filters.add(filter);
         }
         scanSettings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -203,6 +212,8 @@ public class MainActivity extends AppCompatActivity {
                 .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT)
                 .setReportDelay(0)
                 .build();
+
+
         //------------------------------------------------------------------------------------------
 
         //---------------------------------new functionality----------------------------------------
@@ -266,13 +277,23 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        //---------------initializing variables to constrained search-space-------------------------
+        estimateX = 0.0;
+        estimateY = 0.0;
+        minX =0;
+        minY = 0;
+        maxX = xPoints;
+        maxY = yPoints;
+        firstRun = true;
+        //------------------------------------------------------------------------------------------
     }
 
     public String loadJSONFromAsset() {
         //reading the main database file
         String json = null;
         try {
-            InputStream is = getAssets().open("polanka_21_01_uzupelnione.json");
+            InputStream is = getAssets().open("polanka_database.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -384,17 +405,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if (finishedBeaconsIterator==numberOfBeacons) {
-
-                        Log.d("TIME", "End time: " + simpleDateFormat.format(calendar.getTime()));
                         startScanBeaconFlag=false;
                         if (finishedWifiIterator == numberOfWifi) {
-                            //-----------------------------------LOG's------------------------------
-                            //sprawdzic w labie czy poprawnie beacony zebraly probki
-                            //Log.d("CHECK", "values: " + wifiList.get(0).getSamplesTab());
-                            //Log.d("CHECK", "values: " + beaconList.get(0).getSamplesTab());
-                            //Log.d("CHECK", "values: " + beaconList.get(1).getSamplesTab());
-                            //Log.d("CHECK", "values: " + beaconList.get(2).getSamplesTab()); //warning! sometimes may be out of list
-                            //----------------------------------------------------------------------
+
                             calendar = Calendar.getInstance();
                             endTime =simpleDateFormat.format(calendar.getTime());
                             try {
@@ -413,7 +426,6 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
-
                             //---------------------------------LOG's--------------------------------
                             Log.d("SORT CHECK", "values of Wifi: " + wifiList.get(0).getSamplesTab());
                             Log.d("SORT AVERAGE", "MAC addr:" + wifiList.get(0).getName() + " average: " + wifiList.get(0).getAverage());
@@ -421,14 +433,9 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("SORT CHECK", "MAC addr: " + beaconList.get(i).getMacAdress() + " samples: " + beaconList.get(i).getSamplesTab());
                                 Log.d("SORT AVERAGE", "MAC addr:" + beaconList.get(i).getMacAdress() + " average: " + beaconList.get(i).getAverage());
                             }
-                            //--------------------temporary solution--------------------------------
-                            //beaconList.clear();
+
                             finishedBeaconsIterator = 0;
                             finishedWifiIterator = 0;
-                            //wifiList.get(0).clearSamplesIterator();
-                            //wifiList.get(0).clearTheSamplesTab();
-                            //wifiList.get(0).setSavingSamples(true);
-                            //----------------------------------------------------------------------
 
                             try {
                                 //Toast.makeText(getApplicationContext(), "succes ", Toast.LENGTH_SHORT).show();
@@ -459,52 +466,30 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Double> tempTab = new ArrayList<>(); // (x_a - x_b)^2
         double tempCalculation = 0.0;
 
-        for(Transmitter beacon : beaconList)
-        {
-            Log.d("edit", "beacons before sort: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
-        }
-
 
         //----------------------choice of 3 beacons that transmit the most power--------------------
         //needed for it to work properly: set number of beacons = all (line 91)
         //commenting the line from 404 to 410
         beaconList.sort(new strongestBeaconSorter()); // sorting the beacons that collected samples the fastest
-        for(Transmitter beacon : beaconList)
-        {
-            Log.d("edit", "beacons after sort: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
-        }
-        for (int i = beaconList.size(); i > nrOfStrongestBeacons; i--)
-        //removing beacons from the list above the set value
-        {
-            beaconList.remove(i - 1);
-        }
 
-        for(Transmitter beacon : beaconList)
-        {
-            Log.d("korbacz", "beacons after remove: " + beacon.getMacAdress()+" average: "+ beacon.getAverage());
-        }
+
+        //rangeOfSearchSpace();  //determining x and y coordinates needed to search-space
 
         for (int x = 0; x < xPoints; x++) {
             for (int y = 0; y < yPoints; y++) {
                 String str = "" + x + "," + y;
-                    Log.d("Cordinate", "coordinate from database in loop: " + str);
 
-                JSONObject tempPoint = objectUpDatabase.getJSONObject(str);
-                Log.d("testDatabase ","test: " + tempPoint.getString("WIFI"));
                 tempTab.clear();
+                JSONObject tempPoint = objectUpDatabase.getJSONObject(str);
                 String wifiRssiTemp = tempPoint.getString("WIFI");
                 double wifiRssi = Double.parseDouble(wifiRssiTemp);
-                Log.d("RSSI wifi", "WIFI rssi value: " + wifiRssi);
                 tempCalculation = Math.pow((wifiList.get(0).getAverage() - wifiRssi), 2);
-                //Log.d("CALC","wsp: " +str + tempPoint.getString("WIFI"));
                 tempTab.add(tempCalculation);
 
                 for (Transmitter beacon : beaconList) {
-                    String databaseBeaconRssiTemp = tempPoint.getString(beacon.getMacAdress()); // from database
-                    double databaseBeaconRssi = Double.parseDouble(databaseBeaconRssiTemp); //from database
-                    double actualBeaconRssi = beacon.getAverage(); //actual
-                    Log.d("edit","actual point from beacon: "+beacon.getMacAdress()+": "+str+ " " + actualBeaconRssi);
-                    Log.d("edit", "database point from beacon: " +beacon.getMacAdress()+": "+ str+" " + databaseBeaconRssi);
+                    String databaseBeaconRssiTemp = tempPoint.getString(beacon.getMacAdress());
+                    double databaseBeaconRssi = Double.parseDouble(databaseBeaconRssiTemp);
+                    double actualBeaconRssi = beacon.getAverage();
                     tempCalculation = Math.pow((databaseBeaconRssi - actualBeaconRssi), 2);
                     tempTab.add(tempCalculation);
                 }
@@ -517,22 +502,25 @@ public class MainActivity extends AppCompatActivity {
                 referencePointList.add(pt);
             }
         }
-        referencePointList.sort(new euclideanSorter()); // list of sorted euclidean distances with x,y cordinates
+        referencePointList.sort(new euclideanSorter());
+
+
         double maxEuclideanDistance = referencePointList.get(0).getEuclideanDistance()*(1+percentRangeOfEuclideanDist);
         // testing sorting by euclidean distance
+        /*
         for (int i = 0; i < referencePointList.size(); i++) {
             Log.d("SORTEDTAB", "element: " + i + "  x: " +referencePointList.get(i).getX()+"  y: "
                     +referencePointList.get(i).getY()+"eucl distance: "
                     + referencePointList.get(i).getEuclideanDistance());
         }
 
+         */
+
         double x = 0.0;
         double y = 0.0;
         double sumOfWeights = 0.0;
-        double estimateX = 0.0;
-        double estimateY = 0.0;
-
-
+        estimateX = 0.0;
+        estimateY = 0.0;
 
         if(switchKNN==0)
         {
@@ -583,10 +571,7 @@ public class MainActivity extends AppCompatActivity {
             neighboursTv.setText(neigbour1 + neigbour2 + neigbour3 + neigbour4 + neigbour5 );
      //---------------------------------------------------------------------------------------------
 
-
         }
-
-
 
         estimateX = x / sumOfWeights;
         estimateY = y / sumOfWeights;
@@ -594,11 +579,13 @@ public class MainActivity extends AppCompatActivity {
         estimateY = Math.round(estimateY * 100.0) / 100.0; //rounded to 2 decimal places
         estimateXTv.setText("x = "+estimateX);
         estimateYTv.setText("y = "+estimateY);
+
         double realXvalue = Double.parseDouble(String.valueOf(realX.getText()));
         double realYvalue = Double.parseDouble(String.valueOf(realY.getText()));
+
         double estimateError = Math.sqrt(Math.pow(estimateX-realXvalue,2)+Math.pow(estimateY-realYvalue,2));
         errorTv.setText(" "+estimateError);
-       // Log.d("Estimate of positions", "Estimate position x: " +estimateX+"  y: "+ estimateY);
+
         //clear data
         prepareToNewScan();
         long diffs = endT.getTime() - startT.getTime();
@@ -626,19 +613,8 @@ public class MainActivity extends AppCompatActivity {
                 return 1;
             }
             else return -1;
-            //return Integer.valueOf(t1.getSamplesIterator()).compareTo(t2.getSamplesIterator());
         }
     }
-/*
-    public static class strongestBeaconSorter implements Comparator<Transmitter> {
-        @Override
-        public int compare(Transmitter t1, Transmitter t2) {
-            return Double.valueOf(t1.getAverage()).compareTo(t2.getAverage());
-//Double.valueOf(t1.getAverage().compareTo(t2.getAverage()));
-        }
-    }
-
- */
 
     public static class strongestBeaconSorter implements Comparator<Transmitter> {
         @Override
@@ -647,10 +623,8 @@ public class MainActivity extends AppCompatActivity {
                 return 1;
             }
             else return -1;
-            //return Integer.valueOf(t1.getSamplesIterator()).compareTo(t2.getSamplesIterator());
         }
     }
-
 
     public void prepareToNewScan()
     {
@@ -667,6 +641,33 @@ public class MainActivity extends AppCompatActivity {
         referencePointList.clear();
     }
 
+    /*
+     public void rangeOfSearchSpace() {
+        if (firstRun) {
+            firstRun = false;
+        } else {
+            int tempEstimateX = (int) Math.round(estimateX);
+            int tempEstimateY = (int) Math.round(estimateY);
+
+            minX = (int) Math.ceil(tempEstimateX - 2);
+            if (minX < 0)
+                minX = 0;
+            maxX = (int) Math.floor(tempEstimateX + 2) + 1;
+            if (maxX > xPoints)
+                maxX = xPoints;
+            minY = (int) Math.ceil(tempEstimateY - 2);
+            if (minY < 0)
+                minY = 0;
+            maxY = (int) Math.floor(tempEstimateY + 2) + 1;
+            if (maxY > yPoints)
+                maxY = yPoints;
+
+            Log.d("Cordinate ", "min x: " + minX + ", max x: " + maxX);
+            Log.d("Cordinate ", "min y: " + minY + ", max y: " + maxY);
+        }
+        areaTv.setText("min x: "+minX+ ", max x: "+(maxX-1)+", min y: "+minY+", max y: "+(maxY-1));
+    }
+     */
 
 
 }

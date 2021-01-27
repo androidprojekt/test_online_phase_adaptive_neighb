@@ -18,11 +18,11 @@
         android:layout_marginTop="10dp"
         android:inputType="number"
         android:digits="0123456789"
-        android:hint="number of Samples: " />
+        android:hint="Number of samples: " />
 
     <EditText
         android:id="@+id/realXcordinateId"
-        android:hint="real x: "
+        android:hint="Real x: "
         android:layout_width="200dp"
         android:layout_height="40dp"
         android:inputType="number"
@@ -31,7 +31,7 @@
         />
     <EditText
         android:id="@+id/realYcordinateId"
-        android:hint="real y: "
+        android:hint="Real y: "
         android:layout_width="200dp"
         android:layout_height="40dp"
         android:inputType="number"
@@ -40,7 +40,7 @@
         />
     <EditText
         android:id="@+id/percentOfKNNId"
-        android:hint="range in %: "
+        android:hint="Range in %: "
         android:layout_width="200dp"
         android:layout_height="40dp"
         android:inputType="number"
@@ -104,18 +104,18 @@
         android:layout_marginTop="210dp">
 
         <TextView
-            android:id="@+id/estimateOfYId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:text="estimate y:" />
-
-        <TextView
             android:id="@+id/estimateOfXId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="4dp"
-            android:text="estimate x: " />
+            android:text="Estimate x: " />
+        <TextView
+            android:id="@+id/estimateOfYId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:text="Estimate y:" />
+
 
         <TextView
             android:id="@+id/errorTvId"
@@ -129,14 +129,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="4dp"
-            android:text="Neihbours: "
+            android:text="Number of neighbours: "
             />
         <TextView
             android:id="@+id/timeTvId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="4dp"
-            android:text="TIME: "
+            android:text="Time: "
             />
     </LinearLayout>
 
@@ -156,14 +156,14 @@
             android:id="@+id/neigboursTvId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1 \n2 \n3 \n4 \n5" />
+            android:text="Neighbours:" />
         </ScrollView>
 
         <Switch
             android:id="@+id/switchId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="adaptive KNN or classic"
+            android:text="Adaptive WKNN or classic"
             android:layout_gravity="center"
             android:checked="false"/>
 
