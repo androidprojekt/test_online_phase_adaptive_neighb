@@ -166,10 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
         mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         mBlueToothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-
         mBluetoothLeScanner = mBlueToothAdapter.getBluetoothLeScanner();
-
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         beaconList = new ArrayList<>();
         wifiList = new ArrayList<>();
@@ -219,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
         //---------------------------------new functionality----------------------------------------
         // when the app start's, their receiving rssi from wifi and beacons
         // later we should add a functionality in onPause, onResume, onStop etc.
-        // also we should make a version in real time without button
         wifiScanner.run();
         BLEstartScan.run();
         //------------------------------------------------------------------------------------------
@@ -262,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                Log.d("TIME", "start time: " + simpleDateFormat.format(calendar.getTime()));
             }
         });
 
@@ -340,16 +335,13 @@ public class MainActivity extends AppCompatActivity {
                         wifiList.get(0).setSavingSamples(false); //from this point on, we are not to take samples for the next click
                         double average = averageOfList(wifiList.get(0).getSamplesTab());
                         wifiList.get(0).setAverage(average);
-                        Log.d("RSSI TAB", "Wifi: " + wifiList.get(0).getName() +
-                                " tab of RSSI: " + wifiList.get(0).getSamplesTab());
-                        Log.d("RSSI AVERAGE","average of "+wifiList.get(0).getName()+": "+ wifiList.get(0).getAverage());
                         Toast.makeText(getApplicationContext(), "receiving of wifi samples finished", Toast.LENGTH_SHORT).show();
                     } else {
                         checkWifi();
                     }
                 }
             }
-            mHandler.postDelayed(wifiScanner, 200); //nie wiadomo co z czasem, jaka wartosc przyjac?
+            mHandler.postDelayed(wifiScanner, 200);
         }
     };
 
@@ -385,12 +377,8 @@ public class MainActivity extends AppCompatActivity {
                                             transmitter.setSamplesIterator();
 
                                         } if(transmitter.getSamplesIterator() == numberOfSamples) {
-                                            Log.d("RSSI TAB","samples of "+transmitter.getMacAdress()+": "+ transmitter.getSamplesTab());
                                             double average = averageOfList(transmitter.getSamplesTab());
                                             transmitter.setAverage(average);
-                                            Log.d("RSSI AVERAGE","average of "+transmitter.getMacAdress()+": "+ transmitter.getAverage());
-                                            Toast.makeText(getApplicationContext(), "receiving of beacon "
-                                                    +transmitter.getMacAdress()+  "samples finished", Toast.LENGTH_SHORT).show();
                                             transmitter.setSavingSamples(false);
                                             finishedBeaconsIterator++;
                                         }
@@ -407,7 +395,6 @@ public class MainActivity extends AppCompatActivity {
                     if (finishedBeaconsIterator==numberOfBeacons) {
                         startScanBeaconFlag=false;
                         if (finishedWifiIterator == numberOfWifi) {
-
                             calendar = Calendar.getInstance();
                             endTime =simpleDateFormat.format(calendar.getTime());
                             try {
@@ -417,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             startScanWifiFlag = false;
 
-                            beaconList.sort(new beaconSorter()); // sorting the beacons that collected samples the fastest
+                            beaconList.sort(new beaconSorter());
 
                             for (int i = beaconList.size(); i > numberOfBeacons; i--)
                             //removing beacons from the list above the set value
@@ -425,23 +412,12 @@ public class MainActivity extends AppCompatActivity {
                                 beaconList.remove(i - 1);
                             }
 
-
-                            //---------------------------------LOG's--------------------------------
-                            Log.d("SORT CHECK", "values of Wifi: " + wifiList.get(0).getSamplesTab());
-                            Log.d("SORT AVERAGE", "MAC addr:" + wifiList.get(0).getName() + " average: " + wifiList.get(0).getAverage());
-                            for (int i = 0; i < beaconList.size(); i++) {
-                                Log.d("SORT CHECK", "MAC addr: " + beaconList.get(i).getMacAdress() + " samples: " + beaconList.get(i).getSamplesTab());
-                                Log.d("SORT AVERAGE", "MAC addr:" + beaconList.get(i).getMacAdress() + " average: " + beaconList.get(i).getAverage());
-                            }
-
                             finishedBeaconsIterator = 0;
                             finishedWifiIterator = 0;
 
                             try {
-                                //Toast.makeText(getApplicationContext(), "succes ", Toast.LENGTH_SHORT).show();
                                 estimatePositions();
                             } catch (JSONException e) {
-                                //Toast.makeText(getApplicationContext(), "exc", Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
                             }
                         }
@@ -468,17 +444,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         //----------------------choice of 3 beacons that transmit the most power--------------------
-        //needed for it to work properly: set number of beacons = all (line 91)
-        //commenting the line from 404 to 410
-        beaconList.sort(new strongestBeaconSorter()); // sorting the beacons that collected samples the fastest
-
-
+        //needed for it to work properly: set number of beacons = all
+        beaconList.sort(new strongestBeaconSorter());
         //rangeOfSearchSpace();  //determining x and y coordinates needed to search-space
-
         for (int x = 0; x < xPoints; x++) {
             for (int y = 0; y < yPoints; y++) {
                 String str = "" + x + "," + y;
-
                 tempTab.clear();
                 JSONObject tempPoint = objectUpDatabase.getJSONObject(str);
                 String wifiRssiTemp = tempPoint.getString("WIFI");
@@ -503,18 +474,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         referencePointList.sort(new euclideanSorter());
-
-
         double maxEuclideanDistance = referencePointList.get(0).getEuclideanDistance()*(1+percentRangeOfEuclideanDist);
-        // testing sorting by euclidean distance
-        /*
-        for (int i = 0; i < referencePointList.size(); i++) {
-            Log.d("SORTEDTAB", "element: " + i + "  x: " +referencePointList.get(i).getX()+"  y: "
-                    +referencePointList.get(i).getY()+"eucl distance: "
-                    + referencePointList.get(i).getEuclideanDistance());
-        }
-
-         */
 
         double x = 0.0;
         double y = 0.0;
@@ -540,8 +500,6 @@ public class MainActivity extends AppCompatActivity {
             }
             neighboursTv.setText(adaptiveNeighbours);
             nrOfNeighbours.setText("Neighbours: " + String.valueOf(numberOfNeighbours));
-            Log.d("Nearest Neigbours", "CHECK NEIGHBOURS: " + numberOfNeighbours);
-
             //------------------------------------------------------------------------------------------
         }
         else
@@ -550,8 +508,6 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < kNeighbours; i++) {
 
-            Log.d("Nearest Neigbours", "x: " +referencePointList.get(i).getX()+"  y: "+ referencePointList.get(i).getY()
-            +" euclidean distance: " + referencePointList.get(i).getEuclideanDistance());
             x += referencePointList.get(i).getX() * (1 / referencePointList.get(i).getEuclideanDistance());
             y += referencePointList.get(i).getY() * (1 / referencePointList.get(i).getEuclideanDistance());
             sumOfWeights += 1 / referencePointList.get(i).getEuclideanDistance();
