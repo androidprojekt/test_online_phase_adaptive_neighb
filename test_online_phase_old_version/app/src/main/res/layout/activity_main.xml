@@ -7,23 +7,22 @@
 
 <RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="240dp"
     >
 
     <EditText
         android:id="@+id/numberOfSamplesId"
-        android:layout_width="200dp"
-        android:text="0"
+        android:layout_width="160dp"
         android:layout_height="40dp"
         android:layout_marginTop="10dp"
         android:inputType="number"
         android:digits="0123456789"
-        android:hint="Number of samples: " />
+        android:hint="no. samples: " />
 
     <EditText
         android:id="@+id/realXcordinateId"
         android:hint="Real x: "
-        android:layout_width="200dp"
+        android:layout_width="160dp"
         android:layout_height="40dp"
         android:inputType="number"
         android:digits="0123456789"
@@ -32,7 +31,7 @@
     <EditText
         android:id="@+id/realYcordinateId"
         android:hint="Real y: "
-        android:layout_width="200dp"
+        android:layout_width="160dp"
         android:layout_height="40dp"
         android:inputType="number"
         android:digits="0123456789"
@@ -41,22 +40,30 @@
     <EditText
         android:id="@+id/percentOfKNNId"
         android:hint="Range in %: "
-        android:layout_width="200dp"
+        android:layout_width="160dp"
         android:layout_height="40dp"
         android:inputType="number"
         android:digits="0123456789"
-        android:text="0"
         android:layout_marginTop="140dp"
+        />
+    <EditText
+        android:id="@+id/strongestBeaconsId"
+        android:hint="no. Beacon: "
+        android:layout_width="160dp"
+        android:layout_height="40dp"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:layout_marginTop="180dp"
         />
 
     <RadioGroup
         android:id="@+id/radioGroupId"
-        android:layout_width="100dp"
+        android:layout_width="60dp"
         android:layout_height="180dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="14dp">
+        android:layout_marginEnd="130dp"
+        android:layout_marginBottom="33dp">
 
         <RadioButton
             android:id="@+id/k1Id"
@@ -94,6 +101,45 @@
             android:text="5" />
     </RadioGroup>
 
+    <RadioGroup
+        android:id="@+id/radioGroupDirId"
+        android:layout_width="80dp"
+        android:layout_height="180dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="32dp">
+
+        <RadioButton
+            android:id="@+id/upDirId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButtonDir"
+            android:text="UP" />
+
+        <RadioButton
+            android:id="@+id/downDirId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButtonDir"
+            android:text="DOWN" />
+
+        <RadioButton
+            android:id="@+id/leftDirId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButtonDir"
+            android:text="LEFT" />
+
+        <RadioButton
+            android:id="@+id/rightDirId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkRadioButtonDir"
+            android:text="RIGHT" />
+
+    </RadioGroup>
+
 
 </RelativeLayout>
 
@@ -101,7 +147,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="210dp">
+        android:layout_marginTop="250dp">
 
         <TextView
             android:id="@+id/estimateOfXId"
@@ -143,7 +189,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="370dp"
+        android:layout_marginTop="400dp"
         android:orientation="vertical">
 
         <ScrollView

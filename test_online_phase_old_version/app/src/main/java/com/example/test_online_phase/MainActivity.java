@@ -30,6 +30,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,6 +50,19 @@ import static android.Manifest.permission.READ_PHONE_STATE;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    //-----------------------------configuration variables------------------------------------------
+    int numberOfSamples = 15; // number of needed samples to receive in online phase
+    int numberOfBeacons = 7; // beacons in system
+    int numberOfWifi = 1;    // number of AP's
+    int xPoints = 8; // number of X coordinates
+    int yPoints = 5; // number of Y coordinates
+    int kNeighbours = 3; // number of nearest neighbour
+    double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
+    int nrOfStrongestBeacons = 3;
+    //----------------------------------------------------------------------------------------------
+
+
     Switch mySwitch;
     TextView switchTv;
     int switchKNN =0; //0 for adaptive 1 for classic KNN
@@ -57,7 +72,9 @@ public class MainActivity extends AppCompatActivity {
     EditText percentOfKNN;
     Date startT;
     Date endT;
-    int nrOfStrongestBeacons = 3;
+    int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
+    int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
+    String direction = "UP"; //default value
 
     //-------------creating variables and objects needed to BLE and WIFI scan-----------------------
     private BluetoothManager mBluetoothManager;
@@ -77,23 +94,11 @@ public class MainActivity extends AppCompatActivity {
 
     //----------------------------------------layout------------------------------------------------
     private Button startLocalization;
-    RadioGroup radiogroup;
-    RadioButton radioButton;
-    TextView estimateXTv, estimateYTv, errorTv, neighboursTv, nrOfNeighbours;
+    RadioGroup radiogroup, radioGroupDir;
+    RadioButton radioButton, radioButtonDir;
+    TextView estimateXTv, estimateYTv, errorTv, neighboursTv, nrOfNeighbours, strongestBeaconsTv;
     EditText numberOfSamplesEditText, realX, realY;
     Context context;
-    //----------------------------------------------------------------------------------------------
-
-    //-----------------------------configuration variables------------------------------------------
-    int numberOfSamples = 15; // number of needed samples to receive in online phase
-    int numberOfBeacons = 8; // beacons in system
-    int numberOfWifi = 1;    // number of AP's
-    int finishedBeaconsIterator=0; //variable that determines whether the measurements have been collected from beacons
-    int finishedWifiIterator=0; //variable that determines whether the measurements have been collected from wifi
-    int xPoints = 8; // number of X coordinates
-    int yPoints = 5; // number of Y coordinates
-    int kNeighbours = 3; // number of nearest neighbour
-    double percentRangeOfEuclideanDist=0.2; //percentage of the Euclidean distance range
     //----------------------------------------------------------------------------------------------
 
     //-------------------------variables needed to constrained search-space-------------------------
@@ -131,11 +136,13 @@ public class MainActivity extends AppCompatActivity {
         startLocalization = findViewById(R.id.startLocalizationBtnId);
         estimateXTv = findViewById(R.id.estimateOfXId);
         estimateYTv = findViewById(R.id.estimateOfYId);
+        strongestBeaconsTv = findViewById(R.id.strongestBeaconsId);
         errorTv = findViewById(R.id.errorTvId);
         realX = findViewById(R.id.realXcordinateId);
         realY= findViewById(R.id.realYcordinateId);
         numberOfSamplesEditText = findViewById(R.id.numberOfSamplesId);
         radiogroup = findViewById(R.id.radioGroupId);
+        radioGroupDir=findViewById(R.id.radioGroupDirId);
         neighboursTv = findViewById(R.id.neigboursTvId);
         nrOfNeighbours = findViewById(R.id.numberOfNeighbours);
         mySwitch=findViewById(R.id.switchId);
@@ -224,28 +231,39 @@ public class MainActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                int nrOfSamplesTemp = Integer.parseInt(String.valueOf(numberOfSamplesEditText.getText()));
-                if(nrOfSamplesTemp!=0)
+                if(numberOfSamplesEditText.getText().toString().isEmpty())
                 {
-                    numberOfSamples = nrOfSamplesTemp;
-                    Toast.makeText(getApplicationContext(), "number of samples: "+numberOfSamples, Toast.LENGTH_SHORT).show();
+                    numberOfSamples=15;
                 }
                 else
                 {
-                    numberOfSamples=15;
-                    Toast.makeText(getApplicationContext(), "number of samples: "+ numberOfSamples, Toast.LENGTH_SHORT).show();
+                    int nrOfSamplesTemp = Integer.parseInt(String.valueOf(numberOfSamplesEditText.getText()));
+                    numberOfSamples = nrOfSamplesTemp;
                 }
+                Toast.makeText(getApplicationContext(), "number of samples: "+numberOfSamples, Toast.LENGTH_SHORT).show();
 
-                double tempPercentOfKnn;
-                tempPercentOfKnn = Double.parseDouble(String.valueOf(percentOfKNN.getText()));
-                if (tempPercentOfKnn!=0)
+                if(percentOfKNN.getText().toString().isEmpty())
                 {
+                    percentRangeOfEuclideanDist=0.2;
+                }
+                else
+                {
+                    double tempPercentOfKnn;
+                    tempPercentOfKnn = Double.parseDouble(String.valueOf(percentOfKNN.getText()));
                     tempPercentOfKnn = tempPercentOfKnn/100.0;
                     percentRangeOfEuclideanDist=tempPercentOfKnn;
                 }
-                else percentRangeOfEuclideanDist=0.2;
-
                 Toast.makeText(getApplicationContext(), "percentRange: "+ percentRangeOfEuclideanDist, Toast.LENGTH_SHORT).show();
+
+                if(strongestBeaconsTv.getText().toString().isEmpty())
+                {
+                    nrOfStrongestBeacons=2;
+                }
+                else
+                {
+                    nrOfStrongestBeacons=Integer.parseInt(String.valueOf(strongestBeaconsTv.getText()));
+                }
+                Toast.makeText(getApplicationContext(), "strongestBeacons: "+ nrOfStrongestBeacons, Toast.LENGTH_SHORT).show();
 
                 startScanFlag = true;
                 startScanBeaconFlag=true;
@@ -257,7 +275,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-
             }
         });
 
@@ -446,12 +463,35 @@ public class MainActivity extends AppCompatActivity {
         //----------------------choice of 3 beacons that transmit the most power--------------------
         //needed for it to work properly: set number of beacons = all
         beaconList.sort(new strongestBeaconSorter());
+        for (int i = beaconList.size(); i > nrOfStrongestBeacons; i--)
+        //removing beacons from the list above the set value
+        {
+            beaconList.remove(i - 1);
+        }
         //rangeOfSearchSpace();  //determining x and y coordinates needed to search-space
         for (int x = 0; x < xPoints; x++) {
             for (int y = 0; y < yPoints; y++) {
                 String str = "" + x + "," + y;
                 tempTab.clear();
-                JSONObject tempPoint = objectUpDatabase.getJSONObject(str);
+
+                JSONObject tempPoint;
+                switch (direction) {
+                    case "UP":
+                        tempPoint = objectUpDatabase.getJSONObject(str);
+                        break;
+                    case "DOWN":
+                        tempPoint = objectDownDatabase.getJSONObject(str);
+                        break;
+                    case "LEFT":
+                        tempPoint = objectLeftDatabase.getJSONObject(str);
+                        break;
+                    case "RIGHT":
+                        tempPoint = objectRightDatabase.getJSONObject(str);
+                        break;
+                    default:
+                        tempPoint = objectUpDatabase.getJSONObject(str); //get default object (UP)
+                }
+
                 String wifiRssiTemp = tempPoint.getString("WIFI");
                 double wifiRssi = Double.parseDouble(wifiRssiTemp);
                 tempCalculation = Math.pow((wifiList.get(0).getAverage() - wifiRssi), 2);
@@ -552,6 +592,13 @@ public class MainActivity extends AppCompatActivity {
         radioButton= findViewById(radioId);
         kNeighbours= Integer.parseInt((String) radioButton.getText());
         Toast.makeText(getApplicationContext(), "value: " + kNeighbours, Toast.LENGTH_SHORT).show();
+    }
+
+    public void checkRadioButtonDir(View view) {
+        int radioId = radioGroupDir.getCheckedRadioButtonId();
+        radioButtonDir= findViewById(radioId);
+        direction = String.valueOf(radioButtonDir.getText());
+
     }
 
 
